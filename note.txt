@@ -1,0 +1,3 @@
+//update phien ban amplify
+npm update aws-amplify aws-amplify-react
+
