@@ -20,6 +20,8 @@ function App() {
   const [jwtToken, setJwtToken] = useState('');
   const [sayText, setSayText] = useState('');
   const [books, setBooks] = useState([]);
+  const [text, setText] = useState('');
+  const [sentiment, setSentiment] = useState(null);
 
   // Lấy jwtToken từ localStorage khi trang tải
   useEffect(() => {
@@ -71,6 +73,21 @@ function App() {
     // Xóa listener khi component unmount
     return () => listener();
   }, []);
+
+  const analyzeSentiment = () => {
+    fetch('https://udv2vqc0fh.execute-api.us-east-1.amazonaws.com/beta/sentimen', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+      body: JSON.stringify({ text })
+    })
+    .then(response => response.json())
+    .then(data => setSentiment(data))
+    .catch(error => console.log('Error analyzing sentiment:', error));
+  };
+
 
   const fetchJwtToken = async () => {
     try {
@@ -146,7 +163,6 @@ function App() {
   }
 }, [jwtToken]);
 
-
   const handleSignOut = async () => {
     try {
       await Auth.signOut();
@@ -215,17 +231,40 @@ function App() {
         <button onClick={handleSignOut}>Sign out</button>
         <h4>Your JWT token:</h4>
         {jwtToken}
-        <h2>Books:</h2>
-          {/*{sayText}*/}
+          <br/>
+          <br/>
+          <div>
+            <label htmlFor="text-input">Enter Text for Sentiment Analysis:</label>
+            <input
+              id="text-input"
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+            <button onClick={analyzeSentiment}>Analyze</button>
+            {sentiment && (
+              <div>
+                <h4>Sentiment Analysis Result:</h4>
+                <p>{sentiment.body}</p>
+              </div>
+            )}
+          </div>
+
+          <h2>Books:</h2>
+         <div className="book-container">
         {books.map((book, index) => (
-          <div key={index}>
+          <div className="book-item" key={index}>
             <h3>{book.name}</h3>
             <p>Author: {book.author}</p>
             <p>Price: {book.price}</p>
           </div>
         ))}
+      </div>
+
         </div>
+
       )}
+
     </Authenticator>
   );
 }
