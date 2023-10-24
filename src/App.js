@@ -116,11 +116,36 @@ function App() {
   };
 
   // Fetch books when jwtToken changes
+  // useEffect(() => {
+  //   if (jwtToken) {
+  //     fetchBooks();
+  //   }
+  // }, [jwtToken]);
+
   useEffect(() => {
-    if (jwtToken) {
-      fetchBooks();
-    }
-  }, [jwtToken]);
+  if (jwtToken) {
+    fetch('https://udv2vqc0fh.execute-api.us-east-1.amazonaws.com/beta/books', {
+      headers: {
+        'Authorization': `Bearer ${jwtToken}`
+      }
+    })
+    .then(response => {
+      if (response.status === 401) {
+        // Token hết hạn, làm mới token tại đây
+        fetchJwtToken();  // Gọi lại hàm fetchJwtToken() để lấy token mới
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data) {
+        const booksData = JSON.parse(data.body); // Phân tích cú pháp dữ liệu JSON từ trường 'body'
+        setBooks(booksData);
+      }
+    })
+    .catch(error => console.log('Error fetching books:', error));
+  }
+}, [jwtToken]);
+
 
   const handleSignOut = async () => {
     try {
